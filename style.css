@@ -1,108 +1,156 @@
-/* Общие настройки */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
-    border-radius: 0 !important; /* Отключаем любое округление */
+/* ==========================================
+   style.css — Global shared styles
+   Source Scripts
+========================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:         #0a0a0a;
+  --bg2:        #111111;
+  --bg3:        #181818;
+  --border:     #2a2a2a;
+  --border-hi:  #444444;
+  --accent:     #c8ff00;
+  --accent2:    #ff4d00;
+  --text:       #e8e8e8;
+  --text-dim:   #7a7a7a;
+  --text-dimmer:#3a3a3a;
+  --font-mono:  'Share Tech Mono', monospace;
+  --font-main:  'Barlow', sans-serif;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-main);
+  scroll-behavior: smooth;
 }
 
 body {
-    background-color: #0a0a0a; /* Почти черный */
-    color: #e0e0e0; /* Светло-серый текст */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
 }
 
-/* Главная страница */
-.main-page {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+/* ---- HEADER ---- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
-h1 {
-    font-size: 4rem;
-    letter-spacing: 5px;
-    margin-bottom: 30px;
-    color: #ffffff;
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.square-btn {
-    display: inline-block;
-    padding: 15px 40px;
-    border: 2px solid #444;
-    background: transparent;
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
+.logo {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--accent);
+  letter-spacing: 4px;
+  user-select: none;
 }
 
-.square-btn:hover {
-    background: #ffffff;
-    color: #000000;
+.nav {
+  display: flex;
+  gap: 2rem;
 }
 
-/* Навигация */
-nav {
-    padding: 20px;
+.nav-link {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
 }
 
-nav a {
-    color: #888;
-    text-decoration: none;
+.nav-link:hover,
+.nav-link.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
 }
 
-/* Сетка блоков (карточек) */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 40px;
+/* ---- FOOTER ---- */
+.footer {
+  margin-top: auto;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dimmer);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: auto auto 0;
 }
 
-.script-card {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    overflow: hidden;
+.footer-sep {
+  color: var(--border-hi);
 }
 
-.script-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    filter: grayscale(1); /* Для стиля */
+.footer-link {
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
-.card-content {
-    padding: 20px;
+.footer-link:hover {
+  color: var(--accent);
 }
 
-.card-content h2 {
-    margin-bottom: 10px;
-    font-size: 1.5rem;
+/* ---- BUTTON ---- */
+.btn-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--accent);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 14px 28px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
 
-.card-content p {
-    color: #aaa;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-    line-height: 1.4;
+.btn-main:hover {
+  background: #ffffff;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--accent);
 }
 
-.source-btn {
-    display: block;
-    text-align: center;
-    padding: 10px;
-    background: #333;
-    color: white;
-    text-decoration: none;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
+.btn-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s;
 }
 
-.source-btn:hover {
-    background: #555;
+.btn-main:hover .btn-arrow {
+  transform: translateX(4px);
 }

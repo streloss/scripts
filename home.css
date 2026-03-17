@@ -1,0 +1,193 @@
+/* ==========================================
+   home.css — Home page styles
+   Source Scripts
+========================================== */
+
+/* ---- HERO ---- */
+.hero {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: calc(100vh - 60px - 90px);
+  overflow: hidden;
+  padding: 0 2rem;
+}
+
+.hero-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 6rem 0;
+}
+
+.hero-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  margin-bottom: 2rem;
+}
+
+.title-line {
+  font-family: var(--font-main);
+  font-size: clamp(4rem, 12vw, 9rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -2px;
+  color: var(--text);
+}
+
+.title-line.accent {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--accent);
+  text-shadow: none;
+}
+
+.hero-desc {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  margin-bottom: 2.5rem;
+  max-width: 460px;
+}
+
+/* ---- DECO ---- */
+.hero-deco {
+  position: absolute;
+  right: 4vw;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.deco-block {
+  position: absolute;
+  background: transparent;
+}
+
+.b1 {
+  width: 220px;
+  height: 220px;
+  border: 1px solid var(--border-hi);
+  top: -110px;
+  left: -110px;
+}
+
+.b2 {
+  width: 140px;
+  height: 140px;
+  border: 1px solid var(--accent);
+  top: -70px;
+  left: -70px;
+  opacity: 0.5;
+}
+
+.b3 {
+  width: 60px;
+  height: 60px;
+  background: var(--accent);
+  top: -30px;
+  left: -30px;
+  opacity: 0.15;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.35; }
+}
+
+.deco-number {
+  font-family: var(--font-mono);
+  font-size: 10rem;
+  font-weight: 900;
+  color: var(--text-dimmer);
+  opacity: 0.3;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ---- STATS ---- */
+.stats {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.stats-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  height: 90px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+}
+
+/* ---- ANIMATIONS ---- */
+.hero-label,
+.hero-title,
+.hero-desc,
+.btn-main {
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-label { animation-delay: 0.1s; }
+.hero-title { animation-delay: 0.2s; }
+.hero-desc  { animation-delay: 0.35s; }
+.btn-main   { animation-delay: 0.5s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
