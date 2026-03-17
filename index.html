@@ -1,80 +1,875 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Source Scripts</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="home.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Source Scripts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<style>
+/* ============================================
+   RESET & VARIABLES
+============================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:        #0a0a0a;
+  --bg2:       #111111;
+  --bg3:       #1a1a1a;
+  --border:    #242424;
+  --border-hi: #3a3a3a;
+  --accent:    #c8ff00;
+  --text:      #e8e8e8;
+  --text-dim:  #6a6a6a;
+  --text-x:    #2e2e2e;
+  --mono:      'Share Tech Mono', monospace;
+  --sans:      'Barlow', sans-serif;
+}
+
+html,body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
+}
+
+/* ============================================
+   HEADER
+============================================ */
+.header{
+  position:sticky;top:0;z-index:200;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  height:60px;
+}
+.header-inner{
+  max-width:1200px;margin:0 auto;
+  padding:0 2rem;height:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{
+  font-family:var(--mono);font-size:1rem;
+  color:var(--accent);letter-spacing:5px;
+  cursor:pointer;user-select:none;
+}
+.nav{display:flex;gap:0;}
+.nav-btn{
+  font-family:var(--mono);font-size:0.7rem;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--text-dim);background:transparent;
+  border:none;border-bottom:2px solid transparent;
+  padding:8px 20px;cursor:pointer;
+  transition:color .2s,border-color .2s;
+  height:60px;
+}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{color:var(--text);border-bottom-color:var(--accent);}
+
+/* ============================================
+   PAGES (SPA routing)
+============================================ */
+.page{display:none;flex-direction:column;min-height:calc(100vh - 60px);}
+.page.active{display:flex;}
+
+/* ============================================
+   HOME PAGE
+============================================ */
+.hero{
+  flex:1;position:relative;
+  display:flex;align-items:center;
+  overflow:hidden;padding:0 2rem;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:64px 64px;
+  opacity:.4;pointer-events:none;
+}
+.hero-content{
+  position:relative;z-index:2;
+  max-width:1200px;margin:0 auto;width:100%;
+  padding:7rem 0 5rem;
+}
+.hero-eyebrow{
+  font-family:var(--mono);font-size:.68rem;
+  letter-spacing:4px;color:var(--text-dim);
+  text-transform:uppercase;margin-bottom:1.6rem;
+}
+.hero-eyebrow span{color:var(--accent);}
+.hero-h1{
+  display:flex;flex-direction:column;
+  line-height:.95;margin-bottom:2rem;
+}
+.h1-line{
+  font-family:var(--sans);
+  font-size:clamp(3.8rem,11vw,9rem);
+  font-weight:900;text-transform:uppercase;
+  letter-spacing:-3px;color:var(--text);
+}
+.h1-line.outline{
+  color:transparent;
+  -webkit-text-stroke:2px var(--accent);
+}
+.hero-p{
+  font-size:.95rem;line-height:1.75;
+  color:var(--text-dim);margin-bottom:2.5rem;max-width:440px;
+}
+.btn-hero{
+  display:inline-flex;align-items:center;gap:14px;
+  background:var(--accent);color:#000;
+  font-family:var(--mono);font-size:.75rem;
+  letter-spacing:3px;text-transform:uppercase;
+  border:none;padding:15px 30px;cursor:pointer;
+  transition:background .15s,transform .12s,box-shadow .12s;
+}
+.btn-hero:hover{
+  background:#fff;
+  transform:translate(-3px,-3px);
+  box-shadow:5px 5px 0 var(--accent);
+}
+.btn-hero svg{width:16px;height:16px;transition:transform .2s;}
+.btn-hero:hover svg{transform:translateX(5px);}
+
+/* deco */
+.hero-deco{
+  position:absolute;right:6vw;top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;z-index:1;
+}
+.d-box{position:absolute;}
+.d1{width:260px;height:260px;border:1px solid var(--border-hi);top:-130px;left:-130px;}
+.d2{width:160px;height:160px;border:1px solid var(--accent);top:-80px;left:-80px;opacity:.45;}
+.d3{width:60px;height:60px;background:var(--accent);top:-30px;left:-30px;
+    opacity:.12;animation:dpulse 2.8s ease-in-out infinite;}
+.d-num{
+  font-family:var(--mono);font-size:9rem;font-weight:900;
+  color:var(--text-x);line-height:1;user-select:none;
+}
+@keyframes dpulse{0%,100%{opacity:.12;}50%{opacity:.28;}}
+
+/* stats bar */
+.stats{
+  border-top:1px solid var(--border);
+  background:var(--bg2);
+}
+.stats-inner{
+  max-width:1200px;margin:0 auto;
+  padding:0 2rem;height:88px;
+  display:flex;align-items:center;gap:3rem;
+}
+.s-item{display:flex;flex-direction:column;gap:2px;}
+.s-num{font-family:var(--mono);font-size:1.4rem;color:var(--accent);line-height:1;}
+.s-label{font-family:var(--mono);font-size:.62rem;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.s-div{width:1px;height:36px;background:var(--border);}
+
+/* ============================================
+   SCRIPTS PAGE
+============================================ */
+.page-banner{
+  border-bottom:1px solid var(--border);
+  background:var(--bg2);padding:3rem 2rem;
+  position:relative;overflow:hidden;
+}
+.pb-inner{max-width:1200px;margin:0 auto;}
+.pb-eye{
+  font-family:var(--mono);font-size:.68rem;
+  letter-spacing:3px;color:var(--text-dim);
+  text-transform:uppercase;margin-bottom:.8rem;
+}
+.pb-title{
+  font-family:var(--sans);font-weight:900;
+  font-size:clamp(2rem,6vw,4rem);
+  text-transform:uppercase;letter-spacing:-1px;
+  color:var(--text);line-height:1;margin-bottom:.6rem;
+}
+.pb-sub{font-size:.85rem;color:var(--text-dim);}
+.pb-deco{
+  position:absolute;right:3rem;top:50%;
+  transform:translateY(-50%);
+  font-family:var(--mono);font-size:6rem;font-weight:900;
+  color:var(--text-x);opacity:.25;pointer-events:none;
+  letter-spacing:-6px;
+}
+
+/* filter bar */
+.filter-bar{
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  position:sticky;top:60px;z-index:100;
+}
+.filter-inner{
+  max-width:1200px;margin:0 auto;
+  padding:0 2rem;display:flex;height:48px;
+}
+.f-btn{
+  font-family:var(--mono);font-size:.68rem;
+  letter-spacing:2px;text-transform:uppercase;
+  background:transparent;color:var(--text-dim);
+  border:none;border-right:1px solid var(--border);
+  padding:0 20px;cursor:pointer;height:100%;
+  transition:background .15s,color .15s;
+}
+.f-btn:first-child{border-left:1px solid var(--border);}
+.f-btn:hover{background:var(--bg3);color:var(--text);}
+.f-btn.active{background:var(--accent);color:#000;}
+
+/* grid */
+.scripts-grid{
+  max-width:1200px;margin:0 auto;
+  padding:2rem;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  margin-top:2.5rem;
+  margin-bottom:2.5rem;
+}
+
+/* card */
+.s-card{
+  background:var(--bg2);display:flex;
+  flex-direction:column;cursor:pointer;
+  transition:background .15s;position:relative;overflow:hidden;
+}
+.s-card:hover{background:var(--bg3);}
+.card-img-w{
+  position:relative;width:100%;aspect-ratio:16/9;
+  overflow:hidden;background:var(--bg3);
+}
+.card-img-w img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  filter:grayscale(55%) brightness(.65);
+  transition:filter .3s,transform .35s;
+}
+.s-card:hover .card-img-w img{filter:grayscale(15%) brightness(.85);transform:scale(1.05);}
+.card-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 45%,rgba(0,0,0,.75) 100%);
+  opacity:.7;transition:opacity .3s;
+}
+.card-lang-tag{
+  position:absolute;top:10px;left:10px;
+  font-family:var(--mono);font-size:.6rem;
+  letter-spacing:2px;text-transform:uppercase;
+  background:var(--accent);color:#000;
+  padding:3px 8px;z-index:2;
+}
+.card-body{
+  padding:1.1rem 1.25rem 1.4rem;
+  border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:.45rem;
+}
+.card-name{
+  font-family:var(--mono);font-size:.82rem;
+  color:var(--text);letter-spacing:1px;text-transform:uppercase;
+}
+.card-desc{font-size:.78rem;color:var(--text-dim);line-height:1.65;}
+.card-foot{
+  margin-top:.6rem;display:flex;
+  align-items:center;justify-content:space-between;
+}
+.card-ft-lang{font-family:var(--mono);font-size:.6rem;letter-spacing:2px;color:var(--text-x);text-transform:uppercase;}
+.card-arrow{font-family:var(--mono);font-size:.72rem;color:var(--accent);transition:transform .2s;}
+.s-card:hover .card-arrow{transform:translateX(6px);}
+
+/* no results */
+.no-res{
+  grid-column:1/-1;padding:4rem 2rem;
+  text-align:center;font-family:var(--mono);
+  font-size:.78rem;color:var(--text-dim);
+  letter-spacing:2px;text-transform:uppercase;
+  background:var(--bg2);
+}
+
+/* card anim */
+.s-card{animation:cIn .35s ease both;}
+@keyframes cIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* ============================================
+   MODAL
+============================================ */
+.modal-bg{
+  display:none;
+  position:fixed;inset:0;z-index:900;
+  background:rgba(0,0,0,.88);
+  align-items:center;justify-content:center;
+  padding:2rem;
+}
+.modal-bg.open{display:flex;animation:mfade .2s ease;}
+@keyframes mfade{from{opacity:0;}to{opacity:1;}}
+.modal-box{
+  background:var(--bg2);border:1px solid var(--border-hi);
+  max-width:700px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  position:relative;
+}
+.modal-img{
+  width:100%;aspect-ratio:16/9;
+  object-fit:cover;display:block;
+  filter:grayscale(40%) brightness(.65);
+}
+.modal-body{padding:2rem;}
+.modal-tag{
+  font-family:var(--mono);font-size:.62rem;
+  letter-spacing:2px;text-transform:uppercase;
+  background:var(--accent);color:#000;
+  padding:3px 8px;display:inline-block;margin-bottom:1rem;
+}
+.modal-title{
+  font-family:var(--sans);font-weight:900;
+  font-size:1.6rem;text-transform:uppercase;
+  letter-spacing:-0.5px;color:var(--text);margin-bottom:.75rem;
+}
+.modal-desc{font-size:.875rem;color:var(--text-dim);line-height:1.75;margin-bottom:1.5rem;}
+.modal-code-lbl{
+  font-family:var(--mono);font-size:.62rem;
+  letter-spacing:2px;color:var(--border-hi);
+  text-transform:uppercase;margin-bottom:.5rem;
+}
+.modal-code{
+  background:var(--bg);border:1px solid var(--border);
+  padding:1.25rem;overflow-x:auto;
+  font-family:var(--mono);font-size:.76rem;
+  color:var(--accent);line-height:1.65;white-space:pre;
+}
+.modal-close{
+  position:absolute;top:12px;right:12px;
+  background:var(--bg3);border:none;
+  color:var(--text);font-size:.9rem;
+  width:32px;height:32px;cursor:pointer;
+  font-family:var(--mono);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;
+}
+.modal-close:hover{background:var(--accent);color:#000;}
+.modal-copy{
+  margin-top:1.1rem;
+  font-family:var(--mono);font-size:.68rem;
+  letter-spacing:2px;text-transform:uppercase;
+  background:transparent;border:1px solid var(--border-hi);
+  color:var(--text-dim);padding:9px 20px;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.modal-copy:hover{background:var(--accent);color:#000;border-color:var(--accent);}
+
+/* ============================================
+   FOOTER
+============================================ */
+.footer{
+  border-top:1px solid var(--border);
+  padding:1.4rem 2rem;
+  font-family:var(--mono);font-size:.66rem;
+  color:var(--text-x);letter-spacing:1px;
+  display:flex;align-items:center;gap:1rem;
+  max-width:100%;
+}
+.footer-sep{color:var(--border-hi);}
+.footer-lnk{color:var(--text-dim);text-decoration:none;cursor:pointer;transition:color .2s;}
+.footer-lnk:hover{color:var(--accent);}
+
+/* ============================================
+   ANIMATIONS
+============================================ */
+.anim-up{animation:au .55s ease both;}
+@keyframes au{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
+.delay-1{animation-delay:.1s;}
+.delay-2{animation-delay:.22s;}
+.delay-3{animation-delay:.36s;}
+.delay-4{animation-delay:.5s;}
+</style>
 </head>
 <body>
 
-  <header class="header">
-    <div class="header-inner">
-      <span class="logo">SS</span>
-      <nav class="nav">
-        <a href="index.html" class="nav-link active">Home</a>
-        <a href="scripts.html" class="nav-link">Script Sources</a>
-      </nav>
-    </div>
-  </header>
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <span class="logo" onclick="showPage('home')">SS</span>
+    <nav class="nav">
+      <button class="nav-btn active" id="nav-home" onclick="showPage('home')">Home</button>
+      <button class="nav-btn" id="nav-scripts" onclick="showPage('scripts')">Script Sources</button>
+    </nav>
+  </div>
+</header>
 
-  <main class="hero">
-    <div class="hero-bg-grid"></div>
+<!-- =================== HOME PAGE =================== -->
+<div class="page active" id="page-home">
+
+  <section class="hero">
+    <div class="hero-grid"></div>
     <div class="hero-content">
-      <div class="hero-label">— Developer Tools</div>
-      <h1 class="hero-title">
-        <span class="title-line">SOURCE</span>
-        <span class="title-line accent">SCRIPTS</span>
+      <div class="hero-eyebrow anim-up delay-1"><span>▸</span> Developer Tools</div>
+      <h1 class="hero-h1 anim-up delay-2">
+        <span class="h1-line">SOURCE</span>
+        <span class="h1-line outline">SCRIPTS</span>
       </h1>
-      <p class="hero-desc">
-        A curated library of production-ready scripts.<br />
+      <p class="hero-p anim-up delay-3">
+        A curated library of production-ready scripts.<br>
         Find, explore, and use code sources for your projects.
       </p>
-      <a href="scripts.html" class="btn-main">
+      <button class="btn-hero anim-up delay-4" onclick="showPage('scripts')">
         <span>Script Sources</span>
-        <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="5" y1="12" x2="19" y2="12"/>
           <polyline points="12 5 19 12 12 19"/>
         </svg>
-      </a>
+      </button>
     </div>
     <div class="hero-deco">
-      <div class="deco-block b1"></div>
-      <div class="deco-block b2"></div>
-      <div class="deco-block b3"></div>
-      <div class="deco-number">01</div>
+      <div class="d-box d1"></div>
+      <div class="d-box d2"></div>
+      <div class="d-box d3"></div>
+      <div class="d-num">01</div>
     </div>
-  </main>
+  </section>
 
   <section class="stats">
     <div class="stats-inner">
-      <div class="stat-item">
-        <span class="stat-num">12</span>
-        <span class="stat-label">Scripts</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <span class="stat-num">4</span>
-        <span class="stat-label">Categories</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
-        <span class="stat-num">100%</span>
-        <span class="stat-label">Free to use</span>
-      </div>
+      <div class="s-item"><span class="s-num" data-target="12">0</span><span class="s-label">Scripts</span></div>
+      <div class="s-div"></div>
+      <div class="s-item"><span class="s-num" data-target="4">0</span><span class="s-label">Categories</span></div>
+      <div class="s-div"></div>
+      <div class="s-item"><span class="s-num" data-target="100" data-suffix="%">0%</span><span class="s-label">Free to use</span></div>
     </div>
   </section>
 
   <footer class="footer">
     <span>© 2025 Source Scripts</span>
     <span class="footer-sep">|</span>
-    <a href="scripts.html" class="footer-link">Browse Scripts</a>
+    <span class="footer-lnk" onclick="showPage('scripts')">Browse Scripts →</span>
   </footer>
+</div>
 
-  <script src="main.js"></script>
+<!-- =================== SCRIPTS PAGE =================== -->
+<div class="page" id="page-scripts">
+
+  <div class="page-banner">
+    <div class="pb-inner">
+      <div class="pb-eye">— Browse</div>
+      <h2 class="pb-title">Script Sources</h2>
+      <p class="pb-sub">Click any script to view source code and copy it.</p>
+    </div>
+    <div class="pb-deco">//</div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-inner">
+      <button class="f-btn active" data-filter="all">All</button>
+      <button class="f-btn" data-filter="javascript">JavaScript</button>
+      <button class="f-btn" data-filter="python">Python</button>
+      <button class="f-btn" data-filter="bash">Bash</button>
+      <button class="f-btn" data-filter="css">CSS</button>
+    </div>
+  </div>
+
+  <div class="scripts-grid" id="scriptsGrid"></div>
+
+  <footer class="footer">
+    <span>© 2025 Source Scripts</span>
+    <span class="footer-sep">|</span>
+    <span class="footer-lnk" onclick="showPage('home')">← Back to Home</span>
+  </footer>
+</div>
+
+<!-- =================== MODAL =================== -->
+<div class="modal-bg" id="modal" onclick="closeModalBg(event)">
+  <div class="modal-box">
+    <img class="modal-img" id="mImg" src="" alt=""/>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-body">
+      <div class="modal-tag" id="mTag"></div>
+      <div class="modal-title" id="mTitle"></div>
+      <div class="modal-desc" id="mDesc"></div>
+      <div class="modal-code-lbl">// Source</div>
+      <pre class="modal-code" id="mCode"></pre>
+      <button class="modal-copy" id="mCopy" onclick="copyCode()">Copy Code</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================
+   SCRIPT DATA
+============================================ */
+const SCRIPTS = [
+  {
+    id:1, title:"Auto-Clicker", lang:"javascript", tag:"JavaScript",
+    desc:"Automates mouse click events at a set interval. Useful for testing UI or repetitive browser tasks.",
+    img:"https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=60",
+    source:`// Auto-Clicker Script
+let clicking = false;
+let interval = null;
+
+function startClicking(ms = 100) {
+  if (clicking) return;
+  clicking = true;
+  interval = setInterval(() => {
+    document.dispatchEvent(new MouseEvent('click'));
+  }, ms);
+}
+
+function stopClicking() {
+  clearInterval(interval);
+  clicking = false;
+}
+
+// Usage:
+startClicking(200);
+// stopClicking();`
+  },
+  {
+    id:2, title:"Dark Mode Toggle", lang:"javascript", tag:"JavaScript",
+    desc:"Persistent dark/light mode switcher using localStorage. Drop into any project instantly.",
+    img:"https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=60",
+    source:`// Dark Mode Toggle
+const toggle = document.getElementById('theme-toggle');
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+}
+
+toggle?.addEventListener('click', () => {
+  const cur = localStorage.getItem('theme') || 'light';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+});
+
+applyTheme(localStorage.getItem('theme') || 'light');`
+  },
+  {
+    id:3, title:"Scroll Progress Bar", lang:"javascript", tag:"JavaScript",
+    desc:"Adds a thin reading progress bar at the top of the page that fills as the user scrolls down.",
+    img:"https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=600&q=60",
+    source:`// Scroll Progress Bar
+const bar = document.createElement('div');
+Object.assign(bar.style, {
+  position:'fixed', top:0, left:0,
+  height:'3px', width:'0%',
+  background:'#c8ff00', zIndex:9999,
+  transition:'width 0.1s linear'
+});
+document.body.prepend(bar);
+
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY /
+    (document.body.scrollHeight - window.innerHeight) * 100;
+  bar.style.width = pct + '%';
+});`
+  },
+  {
+    id:4, title:"File Organizer", lang:"python", tag:"Python",
+    desc:"Scans a directory and automatically sorts files into subfolders by their extension.",
+    img:"https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=600&q=60",
+    source:`# File Organizer
+import os, shutil
+
+def organize(folder):
+    for f in os.listdir(folder):
+        path = os.path.join(folder, f)
+        if os.path.isfile(path):
+            ext = f.rsplit('.', 1)[-1].lower()
+            dest = os.path.join(folder, ext)
+            os.makedirs(dest, exist_ok=True)
+            shutil.move(path, os.path.join(dest, f))
+            print(f"Moved: {f} -> {ext}/")
+
+organize('/path/to/your/folder')`
+  },
+  {
+    id:5, title:"HTTP Server", lang:"python", tag:"Python",
+    desc:"Spins up a local HTTP file server from any directory. One command, instant preview.",
+    img:"https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=60",
+    source:`# Quick HTTP Server
+import http.server, socketserver, sys
+
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
+DIR  = sys.argv[2] if len(sys.argv) > 2 else '.'
+
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kw):
+        super().__init__(*args, directory=DIR, **kw)
+
+with socketserver.TCPServer(('', PORT), Handler) as h:
+    print(f'http://localhost:{PORT}')
+    h.serve_forever()`
+  },
+  {
+    id:6, title:"Batch Rename", lang:"python", tag:"Python",
+    desc:"Renames all files in a folder using a numbered prefix. Handles any extension automatically.",
+    img:"https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?w=600&q=60",
+    source:`# Batch Rename Script
+import os
+
+def batch_rename(folder, prefix='file'):
+    files = sorted(os.listdir(folder))
+    for i, name in enumerate(files, start=1):
+        ext = os.path.splitext(name)[1]
+        new = f"{prefix}_{i:04d}{ext}"
+        os.rename(
+            os.path.join(folder, name),
+            os.path.join(folder, new)
+        )
+        print(f"{name} -> {new}")
+
+batch_rename('/your/folder', prefix='img')`
+  },
+  {
+    id:7, title:"Backup Script", lang:"bash", tag:"Bash",
+    desc:"Creates a timestamped tar.gz backup of any directory. Perfect for cron job automation.",
+    img:"https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&q=60",
+    source:`#!/bin/bash
+# Backup Script
+SOURCE="/path/to/source"
+DEST="/path/to/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+FILE="backup_$DATE.tar.gz"
+
+mkdir -p "$DEST"
+tar -czf "$DEST/$FILE" "$SOURCE"
+echo "Saved: $DEST/$FILE"`
+  },
+  {
+    id:8, title:"Disk Usage Monitor", lang:"bash", tag:"Bash",
+    desc:"Checks disk usage and sends an alert email if usage exceeds a set threshold percentage.",
+    img:"https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=60",
+    source:`#!/bin/bash
+# Disk Usage Monitor
+THRESHOLD=80
+USAGE=$(df / | tail -1 | awk '{print $5}' | tr -d '%')
+
+if [ "$USAGE" -gt "$THRESHOLD" ]; then
+  echo "ALERT: Disk usage ${USAGE}%" \\
+    | mail -s "Disk Alert" you@example.com
+else
+  echo "OK: ${USAGE}%"
+fi`
+  },
+  {
+    id:9, title:"Env Checker", lang:"bash", tag:"Bash",
+    desc:"Validates that all required environment variables exist before a script starts running.",
+    img:"https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=600&q=60",
+    source:`#!/bin/bash
+# Env Checker
+REQUIRED=("DB_HOST" "DB_USER" "DB_PASS" "API_KEY")
+MISSING=0
+
+for VAR in "\${REQUIRED[@]}"; do
+  if [ -z "\${!VAR}" ]; then
+    echo "MISSING: $VAR"
+    MISSING=1
+  fi
+done
+
+[ $MISSING -eq 1 ] && exit 1
+echo "All env vars present."`
+  },
+  {
+    id:10, title:"CSS Reset", lang:"css", tag:"CSS",
+    desc:"A modern CSS reset that normalizes styles across all browsers with sensible defaults.",
+    img:"https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=600&q=60",
+    source:`/* Modern CSS Reset */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+input, button, textarea, select { font: inherit; }
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}`
+  },
+  {
+    id:11, title:"CSS Variables Theme", lang:"css", tag:"CSS",
+    desc:"Complete CSS custom-properties theme system with dark/light modes and easy overrides.",
+    img:"https://images.unsplash.com/photo-1523437113738-bbd3cc89fb19?w=600&q=60",
+    source:`/* CSS Variables Theme */
+:root {
+  --bg:     #ffffff;
+  --text:   #111111;
+  --accent: #0055ff;
+  --muted:  #888888;
+  --border: #e0e0e0;
+}
+
+[data-theme="dark"] {
+  --bg:     #0a0a0a;
+  --text:   #e8e8e8;
+  --accent: #c8ff00;
+  --muted:  #666666;
+  --border: #2a2a2a;
+}
+
+body { background: var(--bg); color: var(--text); }`
+  },
+  {
+    id:12, title:"Smooth Scroll CSS", lang:"css", tag:"CSS",
+    desc:"Pure-CSS smooth scrolling with scroll-margin offsets for anchor links and sticky headers.",
+    img:"https://images.unsplash.com/photo-1581276879432-15e50529f34b?w=600&q=60",
+    source:`/* Smooth Scroll */
+:root {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+[id] { scroll-margin-top: 80px; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { scroll-behavior: auto; }
+}`
+  }
+];
+
+/* ============================================
+   SPA PAGE ROUTING
+============================================ */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'scripts') renderCards('all');
+  if (name === 'home') runCounters();
+}
+
+/* ============================================
+   RENDER CARDS
+============================================ */
+let currentFilter = 'all';
+
+function renderCards(filter) {
+  currentFilter = filter;
+  const grid = document.getElementById('scriptsGrid');
+  grid.innerHTML = '';
+
+  const list = filter === 'all' ? SCRIPTS : SCRIPTS.filter(s => s.lang === filter);
+
+  if (!list.length) {
+    grid.innerHTML = '<div class="no-res">No scripts found.</div>';
+    return;
+  }
+
+  list.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 's-card';
+    card.style.animationDelay = (i * 0.055) + 's';
+    card.innerHTML = `
+      <div class="card-img-w">
+        <img src="${s.img}" alt="${s.title}" loading="lazy"/>
+        <div class="card-overlay"></div>
+        <span class="card-lang-tag">${s.tag}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${s.title}</div>
+        <div class="card-desc">${s.desc}</div>
+        <div class="card-foot">
+          <span class="card-ft-lang">${s.lang}</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>`;
+    card.addEventListener('click', () => openModal(s));
+    grid.appendChild(card);
+  });
+}
+
+/* filter buttons */
+document.querySelectorAll('.f-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCards(btn.dataset.filter);
+  });
+});
+
+/* ============================================
+   MODAL
+============================================ */
+let currentSource = '';
+
+function openModal(s) {
+  currentSource = s.source;
+  document.getElementById('mImg').src = s.img;
+  document.getElementById('mTag').textContent = s.tag;
+  document.getElementById('mTitle').textContent = s.title;
+  document.getElementById('mDesc').textContent = s.desc;
+  document.getElementById('mCode').textContent = s.source;
+  document.getElementById('mCopy').textContent = 'Copy Code';
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalBg(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(currentSource).then(() => {
+    const btn = document.getElementById('mCopy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy Code', 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = currentSource;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    const btn = document.getElementById('mCopy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy Code', 2000);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ============================================
+   HOME COUNTERS
+============================================ */
+function runCounters() {
+  document.querySelectorAll('.s-num[data-target]').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    let cur = 0;
+    const step = Math.max(1, Math.ceil(target / 28));
+    el.textContent = '0' + suffix;
+    const t = setInterval(() => {
+      cur = Math.min(cur + step, target);
+      el.textContent = cur + suffix;
+      if (cur >= target) clearInterval(t);
+    }, 32);
+  });
+}
+
+/* ============================================
+   PARALLAX ON HOME
+============================================ */
+document.querySelector('.hero')?.addEventListener('mousemove', e => {
+  const {left,top,width,height} = e.currentTarget.getBoundingClientRect();
+  const x = ((e.clientX-left)/width -.5)*18;
+  const y = ((e.clientY-top)/height-.5)*18;
+  const d1 = document.querySelector('.d1');
+  const d2 = document.querySelector('.d2');
+  if(d1) d1.style.transform = `translate(${x*.4}px,${y*.4}px)`;
+  if(d2) d2.style.transform = `translate(${x*.8}px,${y*.8}px)`;
+});
+
+/* init counters on load */
+runCounters();
+</script>
 </body>
 </html>
