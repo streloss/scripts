@@ -13,15 +13,14 @@
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const _cfg = "eyJhcGlLZXkiOiJBSXphU3lBbkQ0ZzdlcDgtNHBOT1lqTkZXT3FvaTYtdmZqY3RqVEEiLCJhdXRoRG9tYWluIjoicG9kc2x1aGFubzE4c2Nob29sLmZpcmViYXNlYXBwLmNvbSIsImRhdGFiYXNlVVJMIjoiaHR0cHM6Ly9wb2RzbHVoYW5vMThzY2hvb2wtZGVmYXVsdC1ydGRiLmV1cm9wZS13ZXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsInByb2plY3RJZCI6InBvZHNsdWhhbm8xOHNjaG9vbCIsInN0b3JhZ2VCdWNrZXQiOiJwb2RzbHVoYW5vMThzY2hvb2wuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMzc4Njc3Mjg0MjM3IiwiYXBwSWQiOiIxOjM3ODY3NzI4NDIzNzp3ZWI6NGE3MTNmY2ZiOTA4MjE5M2UwMDFjNCIsIm1lYXN1cmVtZW50SWQiOiJHLVIxMVFDN0tDUVQifQ==";
-  const firebaseConfig = JSON.parse(atob(_cfg));
 
   let db = null;
   try {
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(JSON.parse(atob(_cfg)));
     db = getFirestore(app);
-    window.FB_READY = true;
+    window._adminFbOk = true;
   } catch(e) {
-    window.FB_READY = false;
+    window._adminFbOk = false;
     console.warn("Firebase error:", e);
   }
 
@@ -42,6 +41,9 @@
     if (!db) return;
     await deleteDoc(doc(db, "scripts", id));
   };
+
+  /* Signal that module is ready */
+  window._adminFbReady = true;
 </script>
 
 <style>
@@ -654,7 +656,7 @@ document.getElementById('f-img').addEventListener('input', function(){
 });
 
 /* ─── SUBMIT SCRIPT ─── */
-async function submitScript() {
+function submitScript() {
   var title = document.getElementById('f-title').value.trim();
   var desc  = document.getElementById('f-desc').value.trim();
   var lang  = document.getElementById('f-lang').value;
@@ -672,26 +674,31 @@ async function submitScript() {
   document.getElementById('submitIcon').style.display = 'none';
   document.getElementById('submitTxt').textContent = 'Saving...';
 
-  try {
-    var id = await window.fbSave({
+  function resetBtn() {
+    btn.disabled = false;
+    document.getElementById('submitSpin').style.display = 'none';
+    document.getElementById('submitIcon').style.display = 'block';
+    document.getElementById('submitTxt').textContent = 'Save Script';
+  }
+
+  waitFb(function() {
+    window.fbSave({
       title: title, desc: desc,
       lang: lang, tag: 'Luau',
       img: img, src: src
+    }).then(function(id) {
+      if (id) {
+        toast('Script saved!', 'ok');
+        resetForm();
+      } else {
+        toast('Save failed — Firebase not ready', 'err');
+      }
+      resetBtn();
+    }).catch(function(e) {
+      toast('Error: ' + e.message, 'err');
+      resetBtn();
     });
-    if (id) {
-      toast('Script saved!', 'ok');
-      resetForm();
-    } else {
-      toast('Save failed — Firebase not ready', 'err');
-    }
-  } catch(e) {
-    toast('Error: ' + e.message, 'err');
-  }
-
-  btn.disabled = false;
-  document.getElementById('submitSpin').style.display = 'none';
-  document.getElementById('submitIcon').style.display = 'block';
-  document.getElementById('submitTxt').textContent = 'Save Script';
+  });
 }
 
 function resetForm() {
@@ -703,63 +710,75 @@ function resetForm() {
   document.getElementById('previewPh').style.display = 'flex';
 }
 
+/* ─── WAIT FOR FIREBASE ─── */
+function waitFb(cb) {
+  if (window._adminFbReady === true) { cb(); return; }
+  setTimeout(function() { waitFb(cb); }, 150);
+}
+
 /* ─── LOAD MANAGE LIST ─── */
-async function loadManage() {
-  var list = document.getElementById('manageList');
+function loadManage() {
+  var list  = document.getElementById('manageList');
   var count = document.getElementById('manageCount');
-  list.innerHTML = '<div class="empty-state"><div class="ei">⟳</div><div class="et">Loading...</div></div>';
+  list.innerHTML =
+    '<div class="empty-state">' +
+      '<div class="ei"><div style="width:32px;height:32px;border:3px solid rgba(255,255,255,.1);border-top-color:#7c6bff;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 12px"></div></div>' +
+      '<div class="et">Loading...</div>' +
+    '</div>';
 
-  try {
-    var scripts = await window.fbLoad();
-    count.textContent = scripts.length + ' script' + (scripts.length === 1 ? '' : 's');
-
-    if (!scripts.length) {
-      list.innerHTML = '<div class="empty-state"><div class="ei">📭</div><div class="et">No scripts yet</div><div class="es">Add a script from the Add tab.</div></div>';
-      return;
-    }
-
-    list.innerHTML = '';
-    var fb = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=200&q=50';
-    scripts.forEach(function(s) {
-      var row = document.createElement('div');
-      row.className = 's-row';
-      row.innerHTML =
-        '<div class="s-row-thumb"><img src="' + (s.img || fb) + '" onerror="this.src=\'' + fb + '\'" alt=""/></div>' +
-        '<div class="s-row-info">' +
-          '<div class="s-row-name">' + esc(s.title) + '</div>' +
-          '<div class="s-row-desc">' + esc(s.desc) + '</div>' +
-          '<div class="s-row-meta">' +
-            '<span class="s-row-tag">' + esc(s.tag || 'Luau') + '</span>' +
-            '<span class="s-row-id">id: ' + s.id.slice(0,8) + '…</span>' +
+  waitFb(function() {
+    window.fbLoad().then(function(scripts) {
+      count.textContent = scripts.length + ' script' + (scripts.length === 1 ? '' : 's');
+      if (!scripts.length) {
+        list.innerHTML = '<div class="empty-state"><div class="ei">📭</div><div class="et">No scripts yet</div><div class="es">Add a script from the Add tab.</div></div>';
+        return;
+      }
+      list.innerHTML = '';
+      var fb = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=200&q=50';
+      scripts.forEach(function(s) {
+        var row = document.createElement('div');
+        row.className = 's-row';
+        row.innerHTML =
+          '<div class="s-row-thumb"><img src="' + (s.img || fb) + '" onerror="this.src=\'' + fb + '\'" alt=""/></div>' +
+          '<div class="s-row-info">' +
+            '<div class="s-row-name">' + esc(s.title) + '</div>' +
+            '<div class="s-row-desc">' + esc(s.desc) + '</div>' +
+            '<div class="s-row-meta">' +
+              '<span class="s-row-tag">' + esc(s.tag || 'Luau') + '</span>' +
+              '<span class="s-row-id">id: ' + s.id.slice(0,8) + '…</span>' +
+            '</div>' +
           '</div>' +
-        '</div>' +
-        '<div class="s-row-actions">' +
-          '<button class="btn-del" onclick="delScript(\'' + s.id + '\', this)">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
-            'Delete' +
-          '</button>' +
-        '</div>';
-      list.appendChild(row);
+          '<div class="s-row-actions">' +
+            '<button class="btn-del" onclick="delScript(\'' + s.id + '\', this)">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
+              'Delete' +
+            '</button>' +
+          '</div>';
+        list.appendChild(row);
+      });
+    }).catch(function(e) {
+      list.innerHTML = '<div class="empty-state"><div class="ei">⚠️</div><div class="et">Failed to load</div><div class="es">' + e.message + '</div></div>';
     });
-  } catch(e) {
-    list.innerHTML = '<div class="empty-state"><div class="ei">⚠️</div><div class="et">Failed to load</div><div class="es">' + e.message + '</div></div>';
-  }
+  });
 }
 
 /* ─── DELETE SCRIPT ─── */
-async function delScript(id, btn) {
+function delScript(id, btn) {
   if (!confirm('Delete this script? This cannot be undone.')) return;
   btn.disabled = true;
   btn.textContent = 'Deleting...';
-  try {
-    await window.fbDelete(id);
+  window.fbDelete(id).then(function() {
     toast('Script deleted', 'ok');
     loadManage();
-  } catch(e) {
+  }).catch(function(e) {
     toast('Delete failed: ' + e.message, 'err');
     btn.disabled = false;
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Delete';
-  }
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<polyline points="3 6 5 6 21 6"/>' +
+        '<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>' +
+      '</svg>Delete';
+  });
 }
 
 /* ─── UTILS ─── */
