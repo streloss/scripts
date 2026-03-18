@@ -859,60 +859,77 @@ footer{
 
 <!-- ═══════════ MAIN SCRIPT ═══════════ -->
 <script>
-/* ─── NO LOCAL STORE — Firebase only ─── */
 
 /* ─── ROUTING ─── */
 function go(page) {
-  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
-  document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.pg').forEach(function(p) { p.classList.remove('on'); });
+  document.querySelectorAll('.nbtn').forEach(function(b) { b.classList.remove('on'); });
   document.getElementById('pg-' + page).classList.add('on');
   document.getElementById('n-' + page).classList.add('on');
   window.scrollTo(0, 0);
   if (page === 'scripts') initScriptsPage();
 }
 
-/* ─── SCRIPTS PAGE INIT ─── */
-async function initScriptsPage() {
-  const fbOk = window.FB_OK;
-
-  // Update firebase status
-  const dot = document.getElementById('fbDot');
-  const lbl = document.getElementById('fbLabel');
-  const banner = document.getElementById('fbBanner');
-  if (fbOk) {
-    dot.className = 'fb-dot ok';
-    lbl.textContent = 'Firebase Connected';
-    banner.style.display = 'none';
+/* ─── WAIT FOR FIREBASE MODULE ─── */
+function waitForFirebase(cb) {
+  if (typeof window.loadFromFirebase === 'function') {
+    cb();
   } else {
-    dot.className = 'fb-dot no';
-    lbl.textContent = 'Local Mode';
-    banner.style.display = 'flex';
+    setTimeout(function() { waitForFirebase(cb); }, 100);
   }
+}
 
-  let scripts = [];
-  try {
-    scripts = await window.loadFromFirebase();
-  } catch(e) {
-    scripts = [];
-  }
+/* ─── SCRIPTS PAGE INIT ─── */
+function initScriptsPage() {
+  var dot    = document.getElementById('fbDot');
+  var lbl    = document.getElementById('fbLabel');
+  var banner = document.getElementById('fbBanner');
+  var grid   = document.getElementById('cardsGrid');
 
-  renderGrid(scripts);
-  document.getElementById('hsCnt').textContent = scripts.length;
+  // Show loading
+  grid.innerHTML =
+    '<div class="empty">' +
+      '<div class="empty-icon">⟳</div>' +
+      '<div class="empty-t">Loading scripts...</div>' +
+    '</div>';
+
+  waitForFirebase(function() {
+    var fbOk = window.FB_OK === true;
+
+    if (fbOk) {
+      dot.className = 'fb-dot ok';
+      lbl.textContent = 'Firebase Connected';
+      banner.style.display = 'none';
+    } else {
+      dot.className = 'fb-dot no';
+      lbl.textContent = 'Offline';
+      banner.style.display = 'flex';
+    }
+
+    window.loadFromFirebase().then(function(scripts) {
+      renderGrid(scripts);
+      document.getElementById('hsCnt').textContent = scripts.length;
+    }).catch(function() {
+      renderGrid([]);
+    });
+  });
 }
 
 /* ─── RENDER GRID ─── */
 function renderGrid(list) {
-  const grid = document.getElementById('cardsGrid');
-  const count = document.getElementById('spCount');
+  var grid  = document.getElementById('cardsGrid');
+  var count = document.getElementById('spCount');
+  var fallback = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=60';
+
   grid.innerHTML = '';
 
-  if (!list || !list.length) {
-    grid.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">📭</div>
-        <div class="empty-t">No scripts yet</div>
-        <div class="empty-s">Click "Add Script" to add the first one.</div>
-      </div>`;
+  if (!list || list.length === 0) {
+    grid.innerHTML =
+      '<div class="empty">' +
+        '<div class="empty-icon">📭</div>' +
+        '<div class="empty-t">No scripts yet</div>' +
+        '<div class="empty-s">Ask the admin to add scripts.</div>' +
+      '</div>';
     count.textContent = '0 scripts';
     return;
   }
@@ -920,100 +937,99 @@ function renderGrid(list) {
   count.textContent = list.length + ' script' + (list.length === 1 ? '' : 's');
 
   list.forEach(function(item, i) {
-    const fallbackImg = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=60';
-    const img = (item.img && item.img.trim()) ? item.img : fallbackImg;
-
-    const card = document.createElement('div');
+    var img = (item.img && item.img.trim()) ? item.img : fallback;
+    var card = document.createElement('div');
     card.className = 'card';
     card.style.animationDelay = Math.min(i * 0.06, 0.5) + 's';
-
     card.innerHTML =
       '<div class="card-thumb">' +
-        '<img src="' + img + '" alt="' + esc(item.title) + '" loading="lazy" onerror="this.src=\'' + fallbackImg + '\'"/>' +
+        '<img src="' + img + '" alt="' + esc(item.title) + '" loading="lazy" onerror="this.src=\'' + fallback + '\'"/>' +
         '<div class="card-thumb-shade"></div>' +
-        '<span class="c-badge">' + esc(item.tag || item.lang) + '</span>' +
+        '<span class="c-badge">' + esc(item.tag || item.lang || 'Luau') + '</span>' +
       '</div>' +
       '<div class="card-body">' +
         '<div class="c-name">' + esc(item.title) + '</div>' +
         '<div class="c-desc">' + esc(item.desc) + '</div>' +
         '<div class="c-foot">' +
-          '<span class="c-lang">' + esc(item.lang) + '</span>' +
-          '<span class="c-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>' +
+          '<span class="c-lang">' + esc(item.lang || 'luau') + '</span>' +
+          '<span class="c-arrow">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' +
+              '<line x1="5" y1="12" x2="19" y2="12"/>' +
+              '<polyline points="12 5 19 12 12 19"/>' +
+            '</svg>' +
+          '</span>' +
         '</div>' +
       '</div>';
-
-    card.addEventListener('click', function(){ openView(item); });
+    card.addEventListener('click', function() { openView(item); });
     grid.appendChild(card);
+  });
 }
 
+/* ─── ESCAPE HTML ─── */
 function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /* ─── VIEW MODAL ─── */
 var _src = '';
+
 function openView(item) {
+  var fallback = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=60';
   _src = item.src || '';
-  const fallbackImg = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=60';
-  document.getElementById('mImg').src = (item.img && item.img.trim()) ? item.img : fallbackImg;
-  document.getElementById('mTag').textContent = item.tag || item.lang;
-  document.getElementById('mTitle').textContent = item.title;
-  document.getElementById('mDesc').textContent = item.desc;
+  document.getElementById('mImg').src = (item.img && item.img.trim()) ? item.img : fallback;
+  document.getElementById('mTag').textContent = item.tag || item.lang || 'Luau';
+  document.getElementById('mTitle').textContent = item.title || '';
+  document.getElementById('mDesc').textContent = item.desc || '';
   document.getElementById('mCode').textContent = item.src || '';
   document.getElementById('copyTxt').textContent = 'Copy Code';
   document.getElementById('viewModal').classList.add('on');
   document.body.style.overflow = 'hidden';
 }
+
 function closeViewModal() {
   document.getElementById('viewModal').classList.remove('on');
   document.body.style.overflow = '';
 }
+
 function closeView(e) {
   if (e.target === document.getElementById('viewModal')) closeViewModal();
 }
+
 function doCopy() {
   var btn = document.getElementById('copyTxt');
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(_src).then(function(){
-      btn.textContent = 'Copied!';
-      setTimeout(function(){ btn.textContent = 'Copy Code'; }, 2000);
+  function done() {
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy Code'; }, 2000);
+  }
+  if (navigator.clipboard && _src) {
+    navigator.clipboard.writeText(_src).then(done).catch(function() {
+      fallbackCopy();
+      done();
     });
   } else {
+    fallbackCopy();
+    done();
+  }
+  function fallbackCopy() {
     var ta = document.createElement('textarea');
-    ta.value = _src; ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    btn.textContent = 'Copied!';
-    setTimeout(function(){ btn.textContent = 'Copy Code'; }, 2000);
+    ta.value = _src;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
   }
 }
 
-/* ─── TOAST ─── */
-var toastTimer = null;
-function toast(msg, type) {
-  var el  = document.getElementById('toast');
-  var dot = document.getElementById('toastDot');
-  var txt = document.getElementById('toastMsg');
-  txt.textContent = msg;
-  el.className = type === 'ok' ? 'ok' : 'err';
-  dot.style.background = type === 'ok' ? 'var(--success)' : 'var(--danger)';
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 3000);
-}
-
 /* ─── ESC KEY ─── */
-document.addEventListener('keydown', function(e){
+document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeViewModal();
 });
 
-/* ─── INIT ─── */
-window.addEventListener('load', function(){
-  // Small delay to let Firebase module load
-  setTimeout(function(){
-    if (window.FB_OK === undefined) window.FB_OK = false;
-  }, 500);
-});
 </script>
 </body>
 </html>
