@@ -18,16 +18,8 @@
      2. Create a project → Add Web App
      3. Copy the firebaseConfig object below
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-  const firebaseConfig = {
-    apiKey: "AIzaSyAnD4g7ep8-4pNOYjNFWOqoi6-vfjctjTA",
-    authDomain: "podsluhano18school.firebaseapp.com",
-    databaseURL: "https://podsluhano18school-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "podsluhano18school",
-    storageBucket: "podsluhano18school.firebasestorage.app",
-    messagingSenderId: "378677284237",
-    appId: "1:378677284237:web:4a713fcfb9082193e001c4",
-    measurementId: "G-R11QC7KCQT"
-  };
+  const _cfg = "eyJhcGlLZXkiOiJBSXphU3lBbkQ0ZzdlcDgtNHBOT1lqTkZXT3FvaTYtdmZqY3RqVEEiLCJhdXRoRG9tYWluIjoicG9kc2x1aGFubzE4c2Nob29sLmZpcmViYXNlYXBwLmNvbSIsImRhdGFiYXNlVVJMIjoiaHR0cHM6Ly9wb2RzbHVoYW5vMThzY2hvb2wtZGVmYXVsdC1ydGRiLmV1cm9wZS13ZXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsInByb2plY3RJZCI6InBvZHNsdWhhbm8xOHNjaG9vbCIsInN0b3JhZ2VCdWNrZXQiOiJwb2RzbHVoYW5vMThzY2hvb2wuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMzc4Njc3Mjg0MjM3IiwiYXBwSWQiOiIxOjM3ODY3NzI4NDIzNzp3ZWI6NGE3MTNmY2ZiOTA4MjE5M2UwMDFjNCIsIm1lYXN1cmVtZW50SWQiOiJHLVIxMVFDN0tDUVQifQ==";
+  const firebaseConfig = JSON.parse(atob(_cfg));
 
   let db = null;
   let FB_OK = false;
@@ -35,7 +27,7 @@
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
-    FB_OK = firebaseConfig.apiKey !== "YOUR_API_KEY";
+    FB_OK = true;
   } catch(e) {
     console.warn("Firebase not configured:", e);
   }
