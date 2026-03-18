@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — Source Scripts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<!-- ═══════════ FIREBASE SDK ═══════════ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, orderBy, query }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const _cfg = "eyJhcGlLZXkiOiJBSXphU3lBbkQ0ZzdlcDgtNHBOT1lqTkZXT3FvaTYtdmZqY3RqVEEiLCJhdXRoRG9tYWluIjoicG9kc2x1aGFubzE4c2Nob29sLmZpcmViYXNlYXBwLmNvbSIsImRhdGFiYXNlVVJMIjoiaHR0cHM6Ly9wb2RzbHVoYW5vMThzY2hvb2wtZGVmYXVsdC1ydGRiLmV1cm9wZS13ZXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsInByb2plY3RJZCI6InBvZHNsdWhhbm8xOHNjaG9vbCIsInN0b3JhZ2VCdWNrZXQiOiJwb2RzbHVoYW5vMThzY2hvb2wuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMzc4Njc3Mjg0MjM3IiwiYXBwSWQiOiIxOjM3ODY3NzI4NDIzNzp3ZWI6NGE3MTNmY2ZiOTA4MjE5M2UwMDFjNCIsIm1lYXN1cmVtZW50SWQiOiJHLVIxMVFDN0tDUVQifQ==";
+  const firebaseConfig = JSON.parse(atob(_cfg));
+
+  let db = null;
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    window.FB_READY = true;
+  } catch(e) {
+    window.FB_READY = false;
+    console.warn("Firebase error:", e);
+  }
+
+  window.fbLoad = async function() {
+    if (!db) return [];
+    const q = query(collection(db, "scripts"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  };
+
+  window.fbSave = async function(data) {
+    if (!db) return null;
+    const ref = await addDoc(collection(db, "scripts"), { ...data, createdAt: Date.now() });
+    return ref.id;
+  };
+
+  window.fbDelete = async function(id) {
+    if (!db) return;
+    await deleteDoc(doc(db, "scripts", id));
+  };
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+button,input,textarea,select{font-family:inherit;cursor:pointer;}
+textarea,input,select{cursor:text;}
+
+:root{
+  --bg:        #0d0d0f;
+  --bg2:       #111116;
+  --bg3:       #17171f;
+  --bg4:       #1e1e28;
+  --border:    rgba(255,255,255,0.07);
+  --border-hi: rgba(255,255,255,0.13);
+  --accent:    #7c6bff;
+  --accent2:   #ff6b9d;
+  --glow:      rgba(124,107,255,0.3);
+  --red:       #ff4d6d;
+  --red-dim:   rgba(255,77,109,0.15);
+  --green:     #4ade80;
+  --txt:       #f0f0f5;
+  --txt-dim:   #7a7a8c;
+  --txt-faint: #2a2a36;
+  --mono:      'JetBrains Mono',monospace;
+  --sans:      'Syne',sans-serif;
+}
+
+html,body{
+  background:var(--bg);color:var(--txt);
+  font-family:var(--sans);min-height:100vh;
+  overflow-x:hidden;
+}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px;}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:0;
+}
+.login-box{
+  background:var(--bg2);
+  border:1px solid var(--border-hi);
+  border-radius:20px;
+  padding:48px 40px;
+  width:100%;max-width:400px;
+  display:flex;flex-direction:column;gap:24px;
+}
+.login-icon{
+  width:52px;height:52px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:4px;
+}
+.login-icon svg{width:26px;height:26px;color:#fff;}
+.login-title{font-size:1.5rem;font-weight:800;color:var(--txt);}
+.login-sub{font-size:.82rem;color:var(--txt-dim);margin-top:-16px;}
+.login-field{display:flex;flex-direction:column;gap:8px;}
+.login-field label{
+  font-family:var(--mono);font-size:.62rem;
+  letter-spacing:2px;text-transform:uppercase;color:var(--txt-dim);
+}
+.login-input{
+  background:var(--bg);border:1px solid var(--border-hi);
+  border-radius:10px;padding:13px 16px;
+  color:var(--txt);font-size:.9rem;outline:none;
+  transition:border-color .15s,box-shadow .15s;letter-spacing:3px;
+}
+.login-input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(124,107,255,.15);
+}
+.login-input.shake{animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+.login-err{
+  font-family:var(--mono);font-size:.72rem;color:var(--red);
+  letter-spacing:1px;display:none;
+}
+.login-err.show{display:block;}
+.btn-login{
+  height:50px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;border-radius:12px;
+  font-family:var(--sans);font-size:.95rem;font-weight:700;
+  box-shadow:0 8px 24px var(--glow);
+  transition:opacity .15s,transform .1s;
+}
+.btn-login:hover{opacity:.9;transform:translateY(-1px);}
+
+/* ── MAIN ADMIN LAYOUT ── */
+#adminApp{display:none;}
+#adminApp.on{display:flex;min-height:100vh;}
+
+/* sidebar */
+.sidebar{
+  width:240px;flex-shrink:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;
+  overflow-y:auto;
+}
+.sb-logo{
+  padding:28px 24px 20px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.sb-logo-dot{
+  width:8px;height:8px;background:var(--accent);
+  border-radius:50%;box-shadow:0 0 8px var(--accent);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 8px var(--accent);}50%{box-shadow:0 0 18px var(--accent),0 0 30px var(--glow);}}
+.sb-logo-txt{font-size:.9rem;font-weight:800;}
+.sb-logo-badge{
+  margin-left:auto;
+  font-family:var(--mono);font-size:.55rem;letter-spacing:1px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;padding:2px 7px;border-radius:100px;
+}
+
+.sb-section{
+  padding:20px 14px 8px;
+  font-family:var(--mono);font-size:.58rem;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--txt-faint);
+}
+.sb-btn{
+  margin:2px 10px;
+  height:40px;padding:0 14px;
+  display:flex;align-items:center;gap:10px;
+  font-size:.82rem;font-weight:600;
+  color:var(--txt-dim);background:transparent;border:none;
+  border-radius:10px;text-align:left;width:calc(100% - 20px);
+  transition:background .12s,color .12s;
+}
+.sb-btn svg{width:16px;height:16px;flex-shrink:0;}
+.sb-btn:hover{background:var(--bg3);color:var(--txt);}
+.sb-btn.on{
+  background:linear-gradient(135deg,rgba(124,107,255,.18),rgba(255,107,157,.1));
+  color:var(--txt);
+  border:1px solid rgba(124,107,255,.25);
+}
+.sb-bottom{
+  margin-top:auto;
+  padding:16px;
+  border-top:1px solid var(--border);
+}
+.sb-logout{
+  width:100%;height:38px;
+  font-family:var(--sans);font-size:.8rem;font-weight:600;
+  background:var(--red-dim);border:1px solid rgba(255,77,109,.25);
+  color:var(--red);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s;
+}
+.sb-logout:hover{background:rgba(255,77,109,.25);}
+.sb-logout svg{width:15px;height:15px;}
+.sb-admin-info{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;margin-bottom:8px;
+  background:var(--bg3);border-radius:10px;
+}
+.sb-avatar{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:800;color:#fff;flex-shrink:0;
+}
+.sb-name{font-size:.8rem;font-weight:700;line-height:1.2;}
+.sb-role{font-family:var(--mono);font-size:.6rem;color:var(--txt-dim);}
+
+/* main content */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+/* tabs */
+.tab{display:none;}
+.tab.on{display:block;}
+
+/* ── TAB: ADD SCRIPT ── */
+.tab-head{
+  padding:36px 36px 0;
+  border-bottom:1px solid var(--border);
+  padding-bottom:28px;
+  background:var(--bg);
+  position:sticky;top:0;z-index:10;
+}
+.tab-title{
+  font-size:1.6rem;font-weight:800;letter-spacing:-.5px;
+  background:linear-gradient(135deg,#fff,#a0a0c0);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.tab-sub{font-size:.82rem;color:var(--txt-dim);margin-top:6px;}
+
+.add-form{
+  padding:32px 36px;
+  display:flex;flex-direction:column;gap:20px;
+  max-width:760px;
+}
+
+.field{display:flex;flex-direction:column;gap:8px;}
+.field label{
+  font-family:var(--mono);font-size:.64rem;
+  letter-spacing:2px;text-transform:uppercase;color:var(--txt-dim);
+}
+.field input,.field textarea,.field select{
+  background:var(--bg2);border:1px solid var(--border-hi);
+  border-radius:10px;padding:13px 16px;
+  color:var(--txt);font-size:.88rem;outline:none;
+  transition:border-color .15s,box-shadow .15s;resize:vertical;
+}
+.field input::placeholder,.field textarea::placeholder{color:var(--txt-faint);}
+.field input:focus,.field textarea:focus,.field select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,107,255,.15);
+}
+.field select option{background:var(--bg2);}
+.field textarea{min-height:180px;font-family:var(--mono);font-size:.78rem;line-height:1.65;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+.img-preview{
+  width:100%;aspect-ratio:16/9;
+  border-radius:12px;overflow:hidden;
+  background:var(--bg2);border:1px dashed var(--border-hi);
+  display:flex;align-items:center;justify-content:center;
+}
+.img-preview img{width:100%;height:100%;object-fit:cover;display:none;}
+.ip-ph{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--txt-faint);
+}
+.ip-ph svg{width:32px;height:32px;}
+.ip-ph span{font-family:var(--mono);font-size:.7rem;letter-spacing:1px;}
+
+.btn-submit{
+  height:52px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;border-radius:12px;
+  font-family:var(--sans);font-size:.95rem;font-weight:700;
+  box-shadow:0 8px 24px var(--glow);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:opacity .15s,transform .1s;max-width:300px;
+}
+.btn-submit:hover{opacity:.9;transform:translateY(-1px);}
+.btn-submit:disabled{opacity:.45;transform:none;cursor:not-allowed;}
+.btn-submit svg{width:18px;height:18px;}
+.spin{
+  width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:sp .6s linear infinite;display:none;
+}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* ── TAB: MANAGE SCRIPTS ── */
+.manage-head{
+  padding:36px 36px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  position:sticky;top:0;z-index:10;
+  flex-wrap:wrap;gap:16px;
+}
+.manage-title-wrap{}
+.manage-title{
+  font-size:1.6rem;font-weight:800;
+  background:linear-gradient(135deg,#fff,#a0a0c0);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:-.5px;
+}
+.manage-count{font-size:.82rem;color:var(--txt-dim);margin-top:4px;}
+.btn-refresh{
+  height:40px;padding:0 18px;
+  font-family:var(--sans);font-size:.8rem;font-weight:600;
+  color:var(--txt-dim);background:var(--bg3);
+  border:1px solid var(--border-hi);border-radius:10px;
+  display:flex;align-items:center;gap:8px;
+  transition:background .12s,color .12s;
+}
+.btn-refresh:hover{background:var(--bg4);color:var(--txt);}
+.btn-refresh svg{width:15px;height:15px;}
+
+.manage-list{padding:24px 36px 40px;display:flex;flex-direction:column;gap:12px;}
+
+/* script row */
+.s-row{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;
+  display:flex;align-items:center;gap:16px;
+  transition:border-color .15s,background .15s;
+}
+.s-row:hover{border-color:var(--border-hi);background:var(--bg3);}
+.s-row-thumb{
+  width:80px;height:50px;flex-shrink:0;
+  border-radius:8px;overflow:hidden;background:var(--bg3);
+}
+.s-row-thumb img{
+  width:100%;height:100%;object-fit:cover;
+  filter:brightness(.6) saturate(.6);
+}
+.s-row-info{flex:1;min-width:0;}
+.s-row-name{
+  font-size:.9rem;font-weight:700;color:var(--txt);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.s-row-desc{
+  font-size:.76rem;color:var(--txt-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-top:3px;
+}
+.s-row-meta{
+  display:flex;align-items:center;gap:8px;margin-top:6px;
+}
+.s-row-tag{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:2px;
+  text-transform:uppercase;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;padding:2px 8px;border-radius:100px;
+}
+.s-row-id{
+  font-family:var(--mono);font-size:.58rem;color:var(--txt-faint);
+}
+.s-row-actions{display:flex;gap:8px;flex-shrink:0;}
+.btn-del{
+  height:36px;padding:0 14px;
+  font-family:var(--sans);font-size:.75rem;font-weight:600;
+  background:var(--red-dim);border:1px solid rgba(255,77,109,.3);
+  color:var(--red);border-radius:9px;
+  display:flex;align-items:center;gap:6px;
+  transition:background .12s;
+}
+.btn-del:hover{background:rgba(255,77,109,.28);}
+.btn-del svg{width:14px;height:14px;}
+
+/* empty state */
+.empty-state{
+  padding:80px 36px;text-align:center;
+}
+.empty-state .ei{font-size:3rem;margin-bottom:16px;}
+.empty-state .et{font-size:1.1rem;font-weight:700;margin-bottom:8px;}
+.empty-state .es{font-size:.85rem;color:var(--txt-dim);}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:28px;right:28px;z-index:9999;
+  background:var(--bg2);border:1px solid var(--border-hi);
+  border-radius:12px;padding:14px 20px;
+  font-size:.82rem;color:var(--txt);
+  display:flex;align-items:center;gap:10px;
+  transform:translateY(12px);opacity:0;
+  transition:transform .25s,opacity .25s;
+  pointer-events:none;min-width:220px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+#toast.show{transform:translateY(0);opacity:1;}
+.t-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .sidebar{display:none;}
+  .field-row{grid-template-columns:1fr;}
+  .add-form,.manage-list{padding:20px;}
+  .tab-head,.manage-head{padding:20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN SCREEN ═══════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="login-title">Admin Panel</div>
+      <div class="login-sub">Source Scripts — restricted access</div>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input class="login-input" id="pwInput" type="password"
+             placeholder="••••••••" autocomplete="off"
+             onkeydown="if(event.key==='Enter') doLogin()"/>
+      <div class="login-err" id="loginErr">Incorrect password. Try again.</div>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Enter Admin Panel</button>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN APP ═══════════ -->
+<div id="adminApp">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <span class="sb-logo-dot"></span>
+      <span class="sb-logo-txt">Source Scripts</span>
+      <span class="sb-logo-badge">ADMIN</span>
+    </div>
+
+    <div class="sb-section">Menu</div>
+    <button class="sb-btn on" id="sb-add" onclick="switchTab('add')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      Add Script
+    </button>
+    <button class="sb-btn" id="sb-manage" onclick="switchTab('manage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+        <line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      Manage Scripts
+    </button>
+
+    <div class="sb-section">Links</div>
+    <button class="sb-btn" onclick="window.open('index.html','_blank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+      View Public Site
+    </button>
+
+    <div class="sb-bottom">
+      <div class="sb-admin-info">
+        <div class="sb-avatar">A</div>
+        <div>
+          <div class="sb-name">Admin</div>
+          <div class="sb-role">superadmin</div>
+        </div>
+      </div>
+      <button class="sb-logout" onclick="doLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Log Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── TAB: ADD SCRIPT ── -->
+    <div class="tab on" id="tab-add">
+      <div class="tab-head">
+        <div class="tab-title">Add New Script</div>
+        <div class="tab-sub">Fill in the fields below and click Save. The script will appear on the public site instantly.</div>
+      </div>
+
+      <div class="add-form">
+
+        <!-- Image preview -->
+        <div class="img-preview" id="imgPreview">
+          <img id="previewImg" src="" alt=""/>
+          <div class="ip-ph" id="previewPh">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>Image preview</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Script Title *</label>
+          <input id="f-title" type="text" placeholder="e.g. Kill All Players"/>
+        </div>
+
+        <div class="field">
+          <label>Short Description *</label>
+          <input id="f-desc" type="text" placeholder="e.g. Kills all players in the server instantly"/>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Language</label>
+            <select id="f-lang">
+              <option value="luau">Luau</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Image URL (optional)</label>
+            <input id="f-img" type="text" placeholder="https://...jpg"/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Source Code *</label>
+          <textarea id="f-code" placeholder="-- Paste your Luau code here..."></textarea>
+        </div>
+
+        <button class="btn-submit" id="submitBtn" onclick="submitScript()">
+          <div class="spin" id="submitSpin"></div>
+          <svg id="submitIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/>
+          </svg>
+          <span id="submitTxt">Save Script</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ── TAB: MANAGE ── -->
+    <div class="tab" id="tab-manage">
+      <div class="manage-head">
+        <div class="manage-title-wrap">
+          <div class="manage-title">Manage Scripts</div>
+          <div class="manage-count" id="manageCount">Loading...</div>
+        </div>
+        <button class="btn-refresh" onclick="loadManage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+      <div class="manage-list" id="manageList">
+        <div class="empty-state">
+          <div class="ei">⟳</div>
+          <div class="et">Loading scripts...</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div id="toast">
+  <span class="t-dot" id="toastDot"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   ADMIN PASSWORD
+   Change the value below to your password
+───────────────────────────────────────── */
+var ADMIN_PASS = atob("c3RyZWxvcw==");
+// To change: go to https://www.base64encode.org, encode your password, paste here
+
+/* ─── LOGIN ─── */
+function doLogin() {
+  var input = document.getElementById('pwInput');
+  var err   = document.getElementById('loginErr');
+  if (input.value === ADMIN_PASS) {
+    sessionStorage.setItem('ss_admin', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminApp').classList.add('on');
+    switchTab('add');
+  } else {
+    err.classList.add('show');
+    input.classList.add('shake');
+    input.value = '';
+    setTimeout(function(){ input.classList.remove('shake'); }, 350);
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('ss_admin');
+  document.getElementById('adminApp').classList.remove('on');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginErr').classList.remove('show');
+}
+
+// Auto-login if already authenticated in this session
+if (sessionStorage.getItem('ss_admin') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').classList.add('on');
+}
+
+/* ─── TAB SWITCH ─── */
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
+  document.querySelectorAll('.sb-btn[id^="sb-"]').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('tab-' + name).classList.add('on');
+  document.getElementById('sb-' + name).classList.add('on');
+  if (name === 'manage') loadManage();
+}
+
+/* ─── IMAGE PREVIEW ─── */
+document.getElementById('f-img').addEventListener('input', function(){
+  var url = this.value.trim();
+  var img = document.getElementById('previewImg');
+  var ph  = document.getElementById('previewPh');
+  if (url) {
+    img.src = url;
+    img.style.display = 'block';
+    ph.style.display = 'none';
+    img.onerror = function(){ img.style.display='none'; ph.style.display='flex'; };
+  } else {
+    img.style.display = 'none';
+    ph.style.display = 'flex';
+  }
+});
+
+/* ─── SUBMIT SCRIPT ─── */
+async function submitScript() {
+  var title = document.getElementById('f-title').value.trim();
+  var desc  = document.getElementById('f-desc').value.trim();
+  var lang  = document.getElementById('f-lang').value;
+  var img   = document.getElementById('f-img').value.trim();
+  var src   = document.getElementById('f-code').value.trim();
+
+  if (!title || !desc || !src) {
+    toast('Fill in Title, Description and Code', 'err');
+    return;
+  }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('submitSpin').style.display = 'block';
+  document.getElementById('submitIcon').style.display = 'none';
+  document.getElementById('submitTxt').textContent = 'Saving...';
+
+  try {
+    var id = await window.fbSave({
+      title: title, desc: desc,
+      lang: lang, tag: 'Luau',
+      img: img, src: src
+    });
+    if (id) {
+      toast('Script saved!', 'ok');
+      resetForm();
+    } else {
+      toast('Save failed — Firebase not ready', 'err');
+    }
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  document.getElementById('submitSpin').style.display = 'none';
+  document.getElementById('submitIcon').style.display = 'block';
+  document.getElementById('submitTxt').textContent = 'Save Script';
+}
+
+function resetForm() {
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-img').value = '';
+  document.getElementById('f-code').value = '';
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('previewPh').style.display = 'flex';
+}
+
+/* ─── LOAD MANAGE LIST ─── */
+async function loadManage() {
+  var list = document.getElementById('manageList');
+  var count = document.getElementById('manageCount');
+  list.innerHTML = '<div class="empty-state"><div class="ei">⟳</div><div class="et">Loading...</div></div>';
+
+  try {
+    var scripts = await window.fbLoad();
+    count.textContent = scripts.length + ' script' + (scripts.length === 1 ? '' : 's');
+
+    if (!scripts.length) {
+      list.innerHTML = '<div class="empty-state"><div class="ei">📭</div><div class="et">No scripts yet</div><div class="es">Add a script from the Add tab.</div></div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    var fb = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=200&q=50';
+    scripts.forEach(function(s) {
+      var row = document.createElement('div');
+      row.className = 's-row';
+      row.innerHTML =
+        '<div class="s-row-thumb"><img src="' + (s.img || fb) + '" onerror="this.src=\'' + fb + '\'" alt=""/></div>' +
+        '<div class="s-row-info">' +
+          '<div class="s-row-name">' + esc(s.title) + '</div>' +
+          '<div class="s-row-desc">' + esc(s.desc) + '</div>' +
+          '<div class="s-row-meta">' +
+            '<span class="s-row-tag">' + esc(s.tag || 'Luau') + '</span>' +
+            '<span class="s-row-id">id: ' + s.id.slice(0,8) + '…</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="s-row-actions">' +
+          '<button class="btn-del" onclick="delScript(\'' + s.id + '\', this)">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
+            'Delete' +
+          '</button>' +
+        '</div>';
+      list.appendChild(row);
+    });
+  } catch(e) {
+    list.innerHTML = '<div class="empty-state"><div class="ei">⚠️</div><div class="et">Failed to load</div><div class="es">' + e.message + '</div></div>';
+  }
+}
+
+/* ─── DELETE SCRIPT ─── */
+async function delScript(id, btn) {
+  if (!confirm('Delete this script? This cannot be undone.')) return;
+  btn.disabled = true;
+  btn.textContent = 'Deleting...';
+  try {
+    await window.fbDelete(id);
+    toast('Script deleted', 'ok');
+    loadManage();
+  } catch(e) {
+    toast('Delete failed: ' + e.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Delete';
+  }
+}
+
+/* ─── UTILS ─── */
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+var _tt;
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  var dot = document.getElementById('toastDot');
+  document.getElementById('toastMsg').textContent = msg;
+  dot.style.background = type === 'ok' ? 'var(--green)' : 'var(--red)';
+  el.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(function(){ el.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>

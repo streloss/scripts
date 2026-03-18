@@ -731,12 +731,7 @@ footer{
     <nav>
       <button class="nbtn on" id="n-home" onclick="go('home')">Home</button>
       <button class="nbtn" id="n-scripts" onclick="go('scripts')">Scripts</button>
-      <button class="btn-add" onclick="openAdd()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Add Script
-      </button>
+
     </nav>
   </div>
 </header>
@@ -854,69 +849,7 @@ footer{
   </div>
 </div>
 
-<!-- ═══════════ MODAL — ADD SCRIPT ═══════════ -->
-<div id="addModal" onclick="closeAddBg(event)">
-  <div class="add-box" onclick="event.stopPropagation()">
-    <div class="add-head">
-      <div class="add-title">Add New Script</div>
-      <button class="add-close" onclick="closeAdd()">✕</button>
-    </div>
-    <p class="add-sub">Fill in the details below — no coding knowledge required.</p>
 
-    <div class="add-form">
-
-      <!-- Image preview -->
-      <div class="img-preview" id="imgPreview">
-        <img id="previewImg" src="" alt=""/>
-        <div class="img-preview-placeholder" id="previewPlaceholder">
-          Image preview will appear here
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Script Title *</label>
-        <input id="f-title" type="text" placeholder="e.g. Auto-Clicker"/>
-      </div>
-
-      <div class="field">
-        <label>Short Description *</label>
-        <input id="f-desc" type="text" placeholder="e.g. Clicks automatically every 100ms"/>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label>Language / Tag *</label>
-          <select id="f-lang">
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="bash">Bash</option>
-            <option value="css">CSS</option>
-            <option value="typescript">TypeScript</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Image URL (optional)</label>
-          <input id="f-img" type="text" placeholder="https://...jpg"/>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Source Code *</label>
-        <textarea id="f-code" placeholder="// Paste your code here..."></textarea>
-      </div>
-
-      <button class="btn-submit" id="submitBtn" onclick="submitScript()">
-        <div class="spin" id="submitSpin"></div>
-        <svg id="submitIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/>
-        </svg>
-        <span id="submitTxt">Save Script</span>
-      </button>
-
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════ TOAST ═══════════ -->
 <div id="toast">
@@ -926,39 +859,7 @@ footer{
 
 <!-- ═══════════ MAIN SCRIPT ═══════════ -->
 <script>
-/* ─── IN-MEMORY FALLBACK STORE ─── */
-let memStore = [
-  {
-    id:'demo1', title:'Dark Mode Toggle', tag:'JavaScript', lang:'javascript',
-    desc:'Persistent dark/light mode switcher using localStorage. Drop into any project.',
-    img:'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=60',
-    src:`// Dark Mode Toggle\nconst btn = document.getElementById('toggle');\n\nfunction setTheme(t) {\n  document.documentElement.dataset.theme = t;\n  localStorage.setItem('theme', t);\n}\n\nbtn?.addEventListener('click', () => {\n  const cur = localStorage.getItem('theme') || 'light';\n  setTheme(cur === 'dark' ? 'light' : 'dark');\n});\n\nsetTheme(localStorage.getItem('theme') || 'light');`
-  },
-  {
-    id:'demo2', title:'Scroll Progress Bar', tag:'JavaScript', lang:'javascript',
-    desc:'Injects a reading progress bar at the top of the page. Zero dependencies.',
-    img:'https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=600&q=60',
-    src:`// Scroll Progress Bar\nconst bar = document.createElement('div');\nObject.assign(bar.style, {\n  position:'fixed', top:0, left:0,\n  height:'3px', width:'0%',\n  background:'#7c6bff', zIndex:9999,\n  transition:'width 0.08s linear'\n});\ndocument.body.prepend(bar);\n\nwindow.addEventListener('scroll', () => {\n  const max = document.body.scrollHeight - innerHeight;\n  bar.style.width = (scrollY / max * 100) + '%';\n});`
-  },
-  {
-    id:'demo3', title:'File Organizer', tag:'Python', lang:'python',
-    desc:'Scans a folder and moves files into sub-directories by extension automatically.',
-    img:'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=600&q=60',
-    src:`# File Organizer\nimport os, shutil\n\ndef organize(folder):\n    for name in os.listdir(folder):\n        path = os.path.join(folder, name)\n        if not os.path.isfile(path): continue\n        ext = name.rsplit('.', 1)[-1].lower()\n        dest = os.path.join(folder, ext)\n        os.makedirs(dest, exist_ok=True)\n        shutil.move(path, os.path.join(dest, name))\n\norganize('/path/to/folder')`
-  },
-  {
-    id:'demo4', title:'Backup Script', tag:'Bash', lang:'bash',
-    desc:'Creates a timestamped tar.gz backup. Ready to drop into a cron job.',
-    img:'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&q=60',
-    src:`#!/bin/bash\n# Timestamped Backup\nSRC="/path/to/source"\nDST="/path/to/backups"\nNOW=$(date +%Y%m%d_%H%M%S)\n\nmkdir -p "$DST"\ntar -czf "$DST/backup_$NOW.tar.gz" "$SRC"\necho "Done: backup_$NOW.tar.gz"`
-  },
-  {
-    id:'demo5', title:'Modern CSS Reset', tag:'CSS', lang:'css',
-    desc:'A minimal CSS reset that normalises styles across browsers.',
-    img:'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=600&q=60',
-    src:`/* Modern CSS Reset */\n*, *::before, *::after { box-sizing: border-box; }\n* { margin: 0; }\nbody {\n  line-height: 1.5;\n  -webkit-font-smoothing: antialiased;\n}\nimg, picture, video, canvas, svg {\n  display: block;\n  max-width: 100%;\n}\ninput, button, textarea, select { font: inherit; }`
-  }
-];
+/* ─── NO LOCAL STORE — Firebase only ─── */
 
 /* ─── ROUTING ─── */
 function go(page) {
@@ -989,14 +890,10 @@ async function initScriptsPage() {
   }
 
   let scripts = [];
-  if (fbOk) {
-    try {
-      scripts = await window.loadFromFirebase();
-    } catch(e) {
-      scripts = memStore;
-    }
-  } else {
-    scripts = memStore;
+  try {
+    scripts = await window.loadFromFirebase();
+  } catch(e) {
+    scripts = [];
   }
 
   renderGrid(scripts);
@@ -1043,14 +940,10 @@ function renderGrid(list) {
           '<span class="c-lang">' + esc(item.lang) + '</span>' +
           '<span class="c-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>' +
         '</div>' +
-      '</div>' +
-      '<button class="c-del" title="Delete" onclick="delScript(event, \'' + item.id + '\')">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
-      '</button>';
+      '</div>';
 
     card.addEventListener('click', function(){ openView(item); });
     grid.appendChild(card);
-  });
 }
 
 function esc(str) {
@@ -1095,119 +988,6 @@ function doCopy() {
   }
 }
 
-/* ─── DELETE ─── */
-async function delScript(e, id) {
-  e.stopPropagation();
-  if (!confirm('Delete this script?')) return;
-  if (window.FB_OK) {
-    await window.deleteFromFirebase(id);
-  } else {
-    memStore = memStore.filter(function(s){ return s.id !== id; });
-  }
-  toast('Deleted', 'ok');
-  initScriptsPage();
-}
-
-/* ─── ADD MODAL ─── */
-function openAdd() {
-  document.getElementById('addModal').classList.add('on');
-  document.body.style.overflow = 'hidden';
-  // Live image preview
-  document.getElementById('f-img').addEventListener('input', updatePreview);
-}
-function closeAdd() {
-  document.getElementById('addModal').classList.remove('on');
-  document.body.style.overflow = '';
-  resetForm();
-}
-function closeAddBg(e) {
-  if (e.target === document.getElementById('addModal')) closeAdd();
-}
-function updatePreview() {
-  var url = document.getElementById('f-img').value.trim();
-  var img = document.getElementById('previewImg');
-  var ph  = document.getElementById('previewPlaceholder');
-  if (url) {
-    img.src = url;
-    img.style.display = 'block';
-    ph.style.display = 'none';
-    img.onerror = function(){ img.style.display='none'; ph.style.display=''; };
-  } else {
-    img.style.display = 'none';
-    ph.style.display = '';
-  }
-}
-function resetForm() {
-  ['f-title','f-desc','f-img','f-code'].forEach(function(id){
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('f-lang').value = 'javascript';
-  document.getElementById('previewImg').style.display = 'none';
-  document.getElementById('previewPlaceholder').style.display = '';
-  document.getElementById('submitTxt').textContent = 'Save Script';
-  document.getElementById('submitSpin').style.display = 'none';
-  document.getElementById('submitIcon').style.display = '';
-  document.getElementById('submitBtn').disabled = false;
-}
-
-/* ─── SUBMIT ─── */
-async function submitScript() {
-  var title = document.getElementById('f-title').value.trim();
-  var desc  = document.getElementById('f-desc').value.trim();
-  var lang  = document.getElementById('f-lang').value;
-  var img   = document.getElementById('f-img').value.trim();
-  var src   = document.getElementById('f-code').value.trim();
-
-  if (!title || !desc || !src) {
-    toast('Please fill Title, Description and Code', 'err');
-    return;
-  }
-
-  var tagMap = {
-    javascript:'JavaScript', python:'Python', bash:'Bash',
-    css:'CSS', typescript:'TypeScript', other:'Other'
-  };
-
-  var data = {
-    title: title,
-    desc:  desc,
-    lang:  lang,
-    tag:   tagMap[lang] || lang,
-    img:   img,
-    src:   src
-  };
-
-  // Loading state
-  var btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  document.getElementById('submitSpin').style.display = 'block';
-  document.getElementById('submitIcon').style.display = 'none';
-  document.getElementById('submitTxt').textContent = 'Saving...';
-
-  var savedId = null;
-  if (window.FB_OK) {
-    savedId = await window.saveToFirebase(data);
-    if (savedId) {
-      toast('Script saved to Firebase!', 'ok');
-    } else {
-      toast('Firebase save failed — saved locally', 'err');
-      data.id = 'local_' + Date.now();
-      memStore.unshift(data);
-    }
-  } else {
-    data.id = 'local_' + Date.now();
-    memStore.unshift(data);
-    toast('Script saved locally!', 'ok');
-  }
-
-  closeAdd();
-
-  // Refresh grid if on scripts page
-  if (document.getElementById('pg-scripts').classList.contains('on')) {
-    initScriptsPage();
-  }
-}
-
 /* ─── TOAST ─── */
 var toastTimer = null;
 function toast(msg, type) {
@@ -1224,17 +1004,13 @@ function toast(msg, type) {
 
 /* ─── ESC KEY ─── */
 document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') {
-    closeViewModal();
-    closeAdd();
-  }
+  if (e.key === 'Escape') closeViewModal();
 });
 
 /* ─── INIT ─── */
 window.addEventListener('load', function(){
   // Small delay to let Firebase module load
   setTimeout(function(){
-    document.getElementById('hsCnt').textContent = memStore.length;
     if (window.FB_OK === undefined) window.FB_OK = false;
   }, 500);
 });
